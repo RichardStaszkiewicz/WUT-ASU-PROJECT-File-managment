@@ -61,4 +61,18 @@ należy wczytywać z pliku konfiguracyjnego np.: $HOME/.clean_files
 Listę katalogów do sprawdzenia należy pobierać z linii komendy.
 
 ## TL;DR
-Zrobić skrypt do obrabiania zasyfionego zestawu katalogów do jednego spójnego.
+Zrobić skrypt do obrabiania zasyfionego zestawu katalogów do jednego spójnego. Funkcje skryptu:
+```.txt
+Usage: projekt.sh [OPTION]... DIRECTORIES...
+    -h  --help          Display help message
+    -x  --set_dir       Specify target directory X
+    -m  --move          Move files to directory X
+    -c  --copy          Copy files to directory X
+    -d  --duplicates    Remove duplicates
+    -e  --empty         Remove empty files
+    -t  --temporary     Remove temporary
+    -n  --namesake      Preserve the newest of namesake files
+    -p  --permissions   Set permissions to default
+    -s  --symbols       Substitute problematic symbols with pre-chosen ('.')
+    -r  --rename        Enable hot-plugged file rename
+```
