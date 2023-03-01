@@ -1,8 +1,10 @@
 #!/bin/bash
 
+DEFAULT_X_DIR="./X"
+
+
 exe_help () {
-    cat
-<< EOF
+    cat << EOF
 Usage: projekt.sh [OPTION]... DIRECTORIES...
     -h  --help          Display help message
     -x  --set_dir       Specify target directory X
@@ -21,19 +23,21 @@ EOF
 }
 
 
-while getopts ":h" option; do
-    case $option in
-        h)
+while test $# -gt 0
+do
+    case $1 in
+        -h | --help)
             exe_help
-            exit
             ;;
-        \?)
-            echo Something
-            exit 1
+        -x | --set_dir)
+            DEFAULT_X_DIR = $2
+            shift
+            ;;
+        -*)
+            echo $1
+            shift;
             ;;
     esac
 done
 
-
-
-exe_help
+echo $#
