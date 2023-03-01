@@ -1,6 +1,16 @@
 #!/bin/bash
 
 DEFAULT_X_DIR="./X"
+SOURCE=()
+TASK_LIST=()        # Task list used to have all hyperparameters set before executing
+FASTFORWARD=0       # for default, fast-forward option is not set
+
+printstate () {
+    echo $DEFAULT_X_DIR
+    echo $SOURCE
+    echo $TASK_LIST
+    echo $FASTFORWARD
+}
 
 
 exe_help () {
@@ -32,12 +42,58 @@ do
         -x | --set_dir)
             DEFAULT_X_DIR = $2
             shift
+            shift
+            ;;
+        -m | --move)
+            TASK_LIST+=("MOVE")
+            shift
+            ;;
+        -c | --copy)
+            TASK_LIST+=("COPY")
+            shift
+            ;;
+        -d | --duplicates)
+            TASK_LIST+=("DUPLICATES")
+            shift
+            ;;
+        -e | --empty)
+            TASK_LIST+=("EMPTY")
+            shift
+            ;;
+        -t | --temporary)
+            TASK_LIST+=("TEMPORARY")
+            shift
+            ;;
+        -n | --namesake)
+            TASK_LIST+=("NAMESAKE")
+            shift
+            ;;
+        -p | --permissions)
+            TASK_LIST+=("PERMISSIONS")
+            shift
+            ;;
+        -s | --symbols)
+            TASK_LIST+=("SYMBOLS")
+            shift
+            ;;
+        -r | --rename)
+            TASK_LIST+=("RENAME")
+            shift
+            ;;
+        -f | --fastforward)
+            FASTFORWARD=1
+            shift
             ;;
         -*)
-            echo $1
+            echo "Invalid option $1" 1>&2   # print error on cerr
+            exe_help
+            ;;
+        *)
+            SOURCE+=("$1")
             shift;
             ;;
     esac
 done
 
-echo $#
+
+printstate
