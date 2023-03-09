@@ -1,1 +1,4 @@
-sth sth
+SUGGESTED_ACCESS=644
+TRICKY_LETTERS=:"\"”;*?\$#'‘|\\"
+TRICKY_LETTER_SUBSTITUTE="-"
+TMP_FILES=".*\(\.tmp\|~\)"

@@ -1,15 +1,15 @@
 #!/bin/bash
 
-DEFAULT_X_DIR="./X"
+X_DIR="./X"
 SOURCE=()
 TASK_LIST=()        # Task list used to have all hyperparameters set before executing
 FASTFORWARD=0       # for default, fast-forward option is not set
 
 printstate () {
-    echo $DEFAULT_X_DIR
-    echo $SOURCE
-    echo $TASK_LIST
-    echo $FASTFORWARD
+    echo X_DIR = $X_DIR
+    echo SOURCE = ${SOURCE[@]}
+    echo TASK_LIST = ${TASK_LIST[@]}
+    echo FASTFORWARD = $FASTFORWARD
 }
 
 
@@ -40,7 +40,7 @@ do
             exe_help
             ;;
         -x | --set_dir)
-            DEFAULT_X_DIR = $2
+            X_DIR=$2
             shift
             shift
             ;;
@@ -95,5 +95,31 @@ do
     esac
 done
 
+do_move () {
+    for CATALOG in "${SOURCE[@]}"; do
+        if [[ "$CATALOG" == "$X_DIR" ]]; then
+            continue
+        fi
 
-printstate
+        find "$CATALOG" -type f -print0 | {
+            while IFS= read -r -d $'\0' FILE; do
+
+                if [[ "$FASTFORWARD" -eq 1 ]]; then # fastforward is set
+                    echo "[Moving] $FILE to $X_DIR..."
+                    CLEARED_FILE=$(echo -n "$FILE" | sed -r 's/\//-/g') # replace / with -
+                    NEW_FILENAME=$(echo -n "$X_DIR/$CLEARED_FILE") # concatenate
+                    cp -r -- "$FILE" "$NEW_FILENAME"
+                else
+                    read -p "Do you want to copy $FILE to $X_DIR? [y/n] " ANSWER </dev/tty
+                    if [[ "$ANSWER" = "y" ]]; then
+                        CLEARED_FILE=$(echo -n "$FILE" | sed -r 's/\//-/g') # replace / with -
+                        NEW_FILENAME=$(echo -n "$X_DIR/$CLEARED_FILE") # concatenate
+                        cp -r -- "$FILE" "$NEW_FILENAME"
+                    fi
+                fi
+            done
+        }
+    done
+}
+
+do_move
