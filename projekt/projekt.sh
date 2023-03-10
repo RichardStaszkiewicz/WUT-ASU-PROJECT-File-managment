@@ -20,13 +20,13 @@ Usage: projekt.sh [OPTION]... DIRECTORIES...
     -x  --set_dir       Specify target directory X
     -m  --move          Move files to directory X
     -c  --copy          Copy files to directory X
-    -d  --duplicates    Remove duplicates
+    -d  --duplicates    Remove duplicates (in terms of content)
     -e  --empty         Remove empty files
     -t  --temporary     Remove temporary files
     -n  --namesake      Preserve the newest of namesake files
     -p  --permissions   Set permissions to default
     -s  --symbols       Substitute problematic symbols with pre-chosen ('.')
-    -r  --rename        Enable hot-plugged file rename
+    -r  --rename        Enable hot-plugged all touched files renaming
     -f  --fastforward   Do not interact with caller: use default choices
 EOF
     exit 0;
@@ -110,7 +110,7 @@ do_move () {
                     NEW_FILENAME=$(echo -n "$X_DIR/$CLEARED_FILE") # concatenate
                     cp -r -- "$FILE" "$NEW_FILENAME"
                 else
-                    read -p "Do you want to copy $FILE to $X_DIR? [y/n] " ANSWER </dev/tty
+                    read -p "Do you want to copy $FILE to $X_DIR? (y/n) " ANSWER </dev/tty
                     if [[ "$ANSWER" = "y" ]]; then
                         CLEARED_FILE=$(echo -n "$FILE" | sed -r 's/\//-/g') # replace / with -
                         NEW_FILENAME=$(echo -n "$X_DIR/$CLEARED_FILE") # concatenate
@@ -122,4 +122,34 @@ do_move () {
     done
 }
 
-do_move
+do_rename () {
+    find "${SOURCE[@]}" -type f -print0 | {
+        while IFS= read -r -d $'\0' FILE; do
+            read -p "Do you want to rename file: $FILE? (y/n) "  ANSWER </dev/tty
+
+            if [[ "$ANSWER" = "y" ]]; then
+                read -p "Provide new name: " NEW_FILENAME </dev/tty
+                mv "$FILE" "$NEW_FILENAME"
+            fi
+        done
+    }
+}
+
+printstate
+
+for TASK in "${TASK_LIST[@]}"; do
+    case "$TASK" in
+        RENAME)
+            do_rename
+            ;;
+        MOVE)
+            do_move
+            ;;
+        COPY)
+            do_copy
+            ;;
+        DUPLICATES)
+            do_duplicates
+            ;;
+    esac
+done
