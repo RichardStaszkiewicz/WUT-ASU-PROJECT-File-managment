@@ -164,11 +164,21 @@ exe_duplicates() {
         return
     fi
 
-    find_oldest
-
     if [[ "$VERBOSE" -eq 1 ]]; then
-        echo Batch of the same files found: "${DUPLICATED_FILES_BATCH[@]}"
-        echo Oldest file in batch: $OLDEST_FILE
+        echo Batch of the same files found: "${DUPLICATED_FILES_BATCH[@]}..."
+        find_oldest
+        echo Found the oldest file in batch: $OLDEST_FILE...
+    else
+        find_oldest
+    fi
+
+    if [[ "$FASTFORWARD" -eq 1 ]]; then
+        for F in "${DUPLICATED_FILES_BATCH[@]}"; do
+            if [[ "$F" != "$OLDEST_FILE" ]]; then
+                echo "Removing duplicate: $F..."
+                rm -f "$F"
+            fi
+        done
     fi
 }
 
