@@ -6,6 +6,8 @@ TASK_LIST=()        # Task list used to have all hyperparameters set before exec
 FASTFORWARD=0       # for default, fast-forward option is not set
 VERBOSE=0           # for default, verbouse option is not set
 
+source ./.clean_files     # DEFAULT_ACCESS; UNWANTED_SYMBOLS; UNWANTED_SYMBOLS_SUBSTITUTE; TMP_FILES
+
 printstate () {
     echo X_DIR = $X_DIR
     echo SOURCE = ${SOURCE[@]}
@@ -220,17 +222,38 @@ do_duplicates () {
 
 
 do_empty () {
-    find "${CATALOGS[@]}" -type f -size 0 -print0  | {
-        while IFS= read -r -d $'\0' FILENAME; do
+    find "${SOURCE[@]}" -type f -size 0 -print0  | {
+        while IFS= read -r -d $'\0' FILE; do
 
-            if [[ "$DEFAULT" = "y" ]]; then
-                echo "Removing empty file: $FILENAME"
-                rm "$FILENAME"
+            if [[ "$FASTFORWARD" -eq 1 ]]; then
+                if [[ "$VERBOSE" -eq 1 ]]; then
+                    echo "Removing empty file: $FILE..."
+                fi
+                rm -f "$FILE"
             else
-                read -p "Do you want to remove empty file: $FILENAME? [y/n] " REMOVE_EMPTY </dev/tty
+                read -p "Do you want to remove empty file: $FILE? (y/n) " ANSWER </dev/tty
 
-                if [[ "$REMOVE_EMPTY" = "y" ]]; then
-                    rm "$FILENAME"
+                if [[ "$ANSWER" = "y" ]]; then
+                    rm -f "$FILE"
+                fi
+            fi
+        done
+    }
+}
+
+do_temporary () {
+    find "${SOURCE[@]}" -type f -regex "$TMP_FILES" -print0 | {
+        while IFS= read -r -d $'\0' FILE; do
+
+            if [[ $FASTFORWARD -eq 1 ]]; then
+                if [[ $VERBOSE -eq 1 ]]; then
+                    echo Removing temporary file "$FILE"...
+                fi
+                rm -f "$FILE"
+            else
+                read -p "Do you want to remove temporary file: $FILE? (y/n) " ANSWER </dev/tty
+                if [[ "$ANSWER" = "y" ]]; then
+                    rm -f "$FILE"
                 fi
             fi
         done
@@ -255,5 +278,12 @@ for TASK in "${TASK_LIST[@]}"; do
         DUPLICATES)
             do_duplicates
             ;;
+        EMPTY)
+            do_empty
+            ;;
+        TEMPORARY)
+            do_temporary
+            ;;
+
     esac
 done
