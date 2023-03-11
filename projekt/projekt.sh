@@ -135,9 +135,17 @@ do_rename () {
     }
 }
 
+DUPLICATED_FILES_BATCH = ()
+
 do_duplicates () {
     # https://unix.stackexchange.com/questions/277697/whats-the-quickest-way-to-find-duplicated-files
-    find "$SOURCE[@]" ! -empty -type f -exec md5sum {} + | sort | uniq -w32 -dD
+    find "$SOURCE[@]" ! -empty -type f -exec md5sum {} + | sort | uniq -w32 -dD | {
+        CURRENT_HASH=""
+
+        while IFS= read -r -d $'\0' LINE; do
+            echo $LINE
+        done
+    }
 }
 
 printstate
