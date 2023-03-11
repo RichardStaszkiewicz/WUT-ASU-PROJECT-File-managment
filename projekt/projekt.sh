@@ -175,8 +175,22 @@ exe_duplicates() {
     if [[ "$FASTFORWARD" -eq 1 ]]; then
         for F in "${DUPLICATED_FILES_BATCH[@]}"; do
             if [[ "$F" != "$OLDEST_FILE" ]]; then
-                echo "Removing duplicate: $F..."
+                if [[ "$VERBOSE" -eq 1 ]]; then
+                    echo "Removing duplicate: $F..."
+                fi
                 rm -f "$F"
+            fi
+        done
+    else
+        for F in "${DUPLICATED_FILES_BATCH[@]}"; do
+            if [[ "$F" != "$OLDEST_FILE" ]]; then
+                read -p "Do you want to remove duplicate: $FILE? (y/n) " ANSWER </dev/tty
+                if [[ "$ANSWER" == 'y' ]]; then
+                    if [[ "$VERBOSE" -eq 1 ]]; then
+                        echo "Removing duplicate: $F..."
+                    fi
+                    rm -f "$F"
+                fi
             fi
         done
     fi
@@ -204,7 +218,9 @@ do_duplicates () {
     }
 }
 
-printstate
+if [[ "$VERBOSE" -eq 1 ]]; then
+    printstate
+fi
 
 for TASK in "${TASK_LIST[@]}"; do
     case "$TASK" in
