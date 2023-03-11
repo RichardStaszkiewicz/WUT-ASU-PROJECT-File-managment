@@ -296,7 +296,7 @@ do_namesake () {
                 else
                     for F in "${NAMESAKE_FILE_BATCH[@]}"; do
                         if [[ "$F" != "$YOUNGEST_FILE" ]]; then
-                            read -p "Do you want to remove older version: $FILE? (y/n) " ANSWER </dev/tty
+                            read -p "Do you want to remove older version: $F? (y/n) " ANSWER </dev/tty
                             if [[ "$ANSWER" == 'y' ]]; then
                                 rm -f "$F"
                             fi
