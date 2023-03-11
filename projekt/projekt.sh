@@ -114,17 +114,17 @@ do_move () {
 
                 if [[ "$FASTFORWARD" -eq 1 ]]; then # fastforward is set
                     if [[ "$VERBOSE" -eq 1 ]]; then
-                        echo "[Moving] $FILE to $X_DIR..."
+                        echo Doing: $OPTION_NAME $FILE to $X_DIR...
                     fi
                     CLEARED_FILE=$(echo -n "$FILE" | sed -r 's/\//-/g') # replace / with -
                     NEW_FILENAME=$(echo -n "$X_DIR/$CLEARED_FILE") # concatenate
-                    cp -r -- "$FILE" "$NEW_FILENAME"
+                    $OPTION "$FILE" "$NEW_FILENAME"
                 else
-                    read -p "Do you want to copy $FILE to $X_DIR? (y/n) " ANSWER </dev/tty
+                    read -p "Do you want to $OPTION_NAME $FILE to $X_DIR? (y/n) " ANSWER </dev/tty
                     if [[ "$ANSWER" = "y" ]]; then
                         CLEARED_FILE=$(echo -n "$FILE" | sed -r 's/\//-/g') # replace / with -
                         NEW_FILENAME=$(echo -n "$X_DIR/$CLEARED_FILE") # concatenate
-                        cp -r -- "$FILE" "$NEW_FILENAME"
+                        $OPTION "$FILE" "$NEW_FILENAME"
                     fi
                 fi
             done
@@ -220,7 +220,6 @@ do_duplicates () {
     }
 }
 
-
 do_empty () {
     find "${SOURCE[@]}" -type f -size 0 -print0  | {
         while IFS= read -r -d $'\0' FILE; do
@@ -270,10 +269,14 @@ for TASK in "${TASK_LIST[@]}"; do
             do_rename
             ;;
         MOVE)
+            OPTION="mv -f --"
+            OPTION_NAME="move"
             do_move
             ;;
         COPY)
-            do_copy
+            OPTION="cp -r --"
+            OPTION_NAME="copy"
+            do_move
             ;;
         DUPLICATES)
             do_duplicates
