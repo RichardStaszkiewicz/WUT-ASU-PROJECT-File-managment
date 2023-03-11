@@ -308,6 +308,27 @@ do_namesake () {
     }
 }
 
+do_permissions () {
+    find "${SOURCE[@]}" -type f -not -perm "$DEFAULT_ACCESS" -print0 | {
+        while IFS= read -r -d $'\0' FILE; do
+
+            if [[ "$FASTFORWARD" -eq 1 ]]; then
+                if [[ "$VERBOSE" -eq 1 ]]; then
+                    echo "Altering permissions of $FILE to rw-r-r..."
+                fi
+                chmod a-rwx $FILE
+                chmod +$DEFAULT_ACCESS $FILE
+            else
+                read -p "Do you want to change $FILE permissions to default ($DEFAULT_ACCESS)? (y/n) " ANSWER </dev/tty
+                if [[ "$ANSWER" == 'y' ]]; then
+                    chmod a-rwx $FILE
+                    chmod +$DEFAULT_ACCESS $FILE
+                fi
+            fi
+        done
+    }
+}
+
 if [[ "$VERBOSE" -eq 1 ]]; then
     printstate
 fi
@@ -338,6 +359,9 @@ for TASK in "${TASK_LIST[@]}"; do
             ;;
         NAMESAKE)
             do_namesake
+            ;;
+        PERMISSIONS)
+            do_permissions
             ;;
 
     esac
