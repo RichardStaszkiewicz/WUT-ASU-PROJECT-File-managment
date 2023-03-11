@@ -76,3 +76,6 @@ Usage: projekt.sh [OPTION]... DIRECTORIES...
     -s  --symbols       Substitute problematic symbols with pre-chosen ('.')
     -r  --rename        Enable hot-plugged file rename
 ```
+
+Sprawdzenie czy robi wszystko:
+projekt.sh -x ./test/X test/a test/b test/c -d -e -t -n -p -s -m -f -v

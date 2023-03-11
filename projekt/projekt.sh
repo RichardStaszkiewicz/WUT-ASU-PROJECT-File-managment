@@ -339,7 +339,7 @@ do_symbols () {
                 if [[ "$VERBOSE" -eq 1 ]]; then
                     echo Changing undesirable file name: $FILE into $NEW_FILENAME...
                 fi
-                mv -f -- $FILE $NEW_FILENAME
+                mv -f -- "$FILE" "$NEW_FILENAME"
             else
                 read -p "Do you want to change $FILE name to more conveniant $NEW_FILENAME? (y/n) " ANSWER </dev/tty
                 if [[ "$ANSWER" == 'y' ]]; then
