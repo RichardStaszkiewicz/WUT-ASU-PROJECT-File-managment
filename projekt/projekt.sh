@@ -218,6 +218,25 @@ do_duplicates () {
     }
 }
 
+
+do_empty () {
+    find "${CATALOGS[@]}" -type f -size 0 -print0  | {
+        while IFS= read -r -d $'\0' FILENAME; do
+
+            if [[ "$DEFAULT" = "y" ]]; then
+                echo "Removing empty file: $FILENAME"
+                rm "$FILENAME"
+            else
+                read -p "Do you want to remove empty file: $FILENAME? [y/n] " REMOVE_EMPTY </dev/tty
+
+                if [[ "$REMOVE_EMPTY" = "y" ]]; then
+                    rm "$FILENAME"
+                fi
+            fi
+        done
+    }
+}
+
 if [[ "$VERBOSE" -eq 1 ]]; then
     printstate
 fi
