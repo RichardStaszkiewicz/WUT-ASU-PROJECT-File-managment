@@ -135,6 +135,11 @@ do_rename () {
     }
 }
 
+do_duplicates () {
+    # https://unix.stackexchange.com/questions/277697/whats-the-quickest-way-to-find-duplicated-files
+    find "$SOURCE[@]" ! -empty -type f -exec md5sum {} + | sort | uniq -w32 -dD
+}
+
 printstate
 
 for TASK in "${TASK_LIST[@]}"; do
