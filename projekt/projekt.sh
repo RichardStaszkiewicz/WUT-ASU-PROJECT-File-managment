@@ -4,6 +4,7 @@ X_DIR="./X"
 SOURCE=()
 TASK_LIST=()        # Task list used to have all hyperparameters set before executing
 FASTFORWARD=0       # for default, fast-forward option is not set
+VERBOSE=0           # for default, verbouse option is not set
 
 printstate () {
     echo X_DIR = $X_DIR
@@ -28,6 +29,7 @@ Usage: projekt.sh [OPTION]... DIRECTORIES...
     -s  --symbols       Substitute problematic symbols with pre-chosen ('.')
     -r  --rename        Enable hot-plugged all touched files renaming
     -f  --fastforward   Do not interact with caller: use default choices
+    -v  --verbose       Print state messages
 EOF
     exit 0;
 }
@@ -84,6 +86,10 @@ do
             FASTFORWARD=1
             shift
             ;;
+        -v | --verbose)
+            VERBOSE=1
+            shift
+            ;;
         -*)
             echo "Invalid option $1" 1>&2   # print error on cerr
             exe_help
@@ -105,7 +111,9 @@ do_move () {
             while IFS= read -r -d $'\0' FILE; do
 
                 if [[ "$FASTFORWARD" -eq 1 ]]; then # fastforward is set
-                    echo "[Moving] $FILE to $X_DIR..."
+                    if [[ "$VERBOSE" -eq 1 ]]; then
+                        echo "[Moving] $FILE to $X_DIR..."
+                    fi
                     CLEARED_FILE=$(echo -n "$FILE" | sed -r 's/\//-/g') # replace / with -
                     NEW_FILENAME=$(echo -n "$X_DIR/$CLEARED_FILE") # concatenate
                     cp -r -- "$FILE" "$NEW_FILENAME"
@@ -144,8 +152,6 @@ do_duplicates () {
         CURRENT_HASH=""
 
         while IFS= read -r -d $'\n' LINE; do
-            HASH=$(echo "$LINE" | cut -c 1-32)
-            FILE=$(echo "$LINE" | cut -c 34-)
             if [[ $HASH -eq $CURRENT_HASH ]]; then
                 DUPLICATED_FILES_BATCH+=("$FILE")
             else
