@@ -136,6 +136,7 @@ do_rename () {
 }
 
 DUPLICATED_FILES_BATCH=()
+exe_duplicates() {}
 
 do_duplicates () {
     # https://unix.stackexchange.com/questions/277697/whats-the-quickest-way-to-find-duplicated-files
@@ -145,8 +146,12 @@ do_duplicates () {
         while IFS= read -r -d $'\n' LINE; do
             HASH=$(echo "$LINE" | cut -c 1-32)
             FILE=$(echo "$LINE" | cut -c 34-)
-            echo $LINE
-            echo $HASH
+            if [[ $HASH -eq $CURRENT_HASH ]]; then
+                DUPLICATED_FILES_BATCH+=("$FILE")
+            else
+                exe_duplicates
+                CURRENT_HASH="$HASH"
+                DUPLICATED_FILES_BATCH=("$FILE")
         done
     }
 }
