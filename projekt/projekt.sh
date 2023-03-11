@@ -144,17 +144,32 @@ do_rename () {
 }
 
 DUPLICATED_FILES_BATCH=()
+OLDEST_FILE=""
+OLDEST_FILE_TIME=""
+
+find_oldest() {
+    OLDEST_FILE="$DUPLICATED_FILES_BATCH"
+    OLDEST_FILE_TIME=$( stat -c %Y "$OLDEST_FILE" )
+
+    for F in "${DUPLICATED_FILES_BATCH[@]}"; do
+        if [[ $( stat -c %Y "$F" ) -gt $OLDEST_FILE_TIME ]]; then
+            OLDEST_FILE=$F
+            OLDEST_FILE_TIME=$( stat -c %Y "$F" )
+        fi
+    done
+}
+
 exe_duplicates() {
     if [[ $CURRENT_HASH == "" ]]; then
         return
     fi
+
+    find_oldest
+
     if [[ "$VERBOSE" -eq 1 ]]; then
         echo Batch of the same files found: "${DUPLICATED_FILES_BATCH[@]}"
+        echo Oldest file in batch: $OLDEST_FILE
     fi
-
-    OLDEST_FILE="$DUPLICATED_FILES_BATCH"
-    OLDEST_FILE_TIME=$( stat -c %Y "$OLDEST_FILE" )
-    echo $OLDEST_FILE_TIME
 }
 
 do_duplicates () {
