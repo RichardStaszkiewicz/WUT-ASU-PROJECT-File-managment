@@ -32,6 +32,8 @@ Usage: projekt.sh [OPTION]... DIRECTORIES...
     -r  --rename        Enable hot-plugged all touched files renaming
     -f  --fastforward   Do not interact with caller: use default choices
     -v  --verbose       Print state messages
+
+    Be concious options -symbols & -permissions may require you to be root
 EOF
     exit 0;
 }
@@ -319,7 +321,7 @@ do_permissions () {
                 chmod a-rwx $FILE
                 chmod +$DEFAULT_ACCESS $FILE
             else
-                read -p "Do you want to change $FILE permissions to default ($DEFAULT_ACCESS)? (y/n) " ANSWER </dev/tty
+                read -p "Do you want to change $FILE permissions from $(stat -c "%a" $FILE) to default ($DEFAULT_ACCESS)? (y/n) " ANSWER </dev/tty
                 if [[ "$ANSWER" == 'y' ]]; then
                     chmod a-rwx $FILE
                     chmod +$DEFAULT_ACCESS $FILE
@@ -339,11 +341,12 @@ do_symbols () {
                 fi
                 mv -f -- $FILE $NEW_FILENAME
             else
-                read -p "Do you want to change $FILE name to more conveniant ($NEW_FILENAME)? (y/n) " ANSWER </dev/tty
+                read -p "Do you want to change $FILE name to more conveniant $NEW_FILENAME? (y/n) " ANSWER </dev/tty
                 if [[ "$ANSWER" == 'y' ]]; then
-                    mv -f -- $FILE $NEW_FILENAME
+                    mv -f -- "$FILE" "$NEW_FILENAME"
                 fi
             fi
+        done
     }
 }
 
