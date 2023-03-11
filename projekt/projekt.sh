@@ -154,7 +154,7 @@ find_oldest() {
     OLDEST_FILE_TIME=$( stat -c %Y "$OLDEST_FILE" )
 
     for F in "${DUPLICATED_FILES_BATCH[@]}"; do
-        if [[ $( stat -c %Y "$F" ) -gt $OLDEST_FILE_TIME ]]; then
+        if [[ $( stat -c %Y "$F" ) -lt $OLDEST_FILE_TIME ]]; then
             OLDEST_FILE=$F
             OLDEST_FILE_TIME=$( stat -c %Y "$F" )
         fi
@@ -166,6 +166,7 @@ exe_duplicates() {
         return
     fi
 
+    OLDEST_COMMAND="-gt"
     if [[ "$VERBOSE" -eq 1 ]]; then
         echo Batch of the same files found: "${DUPLICATED_FILES_BATCH[@]}..."
         find_oldest
@@ -188,9 +189,6 @@ exe_duplicates() {
             if [[ "$F" != "$OLDEST_FILE" ]]; then
                 read -p "Do you want to remove duplicate: $FILE? (y/n) " ANSWER </dev/tty
                 if [[ "$ANSWER" == 'y' ]]; then
-                    if [[ "$VERBOSE" -eq 1 ]]; then
-                        echo "Removing duplicate: $F..."
-                    fi
                     rm -f "$F"
                 fi
             fi
@@ -259,6 +257,57 @@ do_temporary () {
     }
 }
 
+do_namesake () {
+    find "${SOURCE[@]}" -type f -print0 | sed 's_.*/__' -z | sort -z |  uniq -z -d | {
+        while IFS= read -r -d $'\0' NAMESAKE; do
+            find "${SOURCE[@]}" -name "$NAMESAKE" -print0 | {
+                NAMESAKE_FILE_BATCH=()
+                while IFS= read -r -d $'\0' FILE; do
+                    NAMESAKE_FILE_BATCH+=("$FILE")
+                done
+
+                if [[ "$VERBOSE" -eq 1 ]]; then
+                    echo Batch of the namesake files found: "${NAMESAKE_FILE_BATCH[@]}..."
+                fi
+
+                YOUNGEST_FILE="$NAMESAKE_FILE_BATCH"
+                YOUNGEST_FILE_TIME=$( stat -c %Y "$YOUNGEST_FILE" )
+
+                for F in "${NAMESAKE_FILE_BATCH[@]}"; do
+                    if [[ $( stat -c %Y "$F" ) -gt $YOUNGEST_FILE_TIME ]]; then
+                        YOUNGEST_FILE=$F
+                        YOUNGEST_FILE_TIME=$( stat -c %Y "$F" )
+                    fi
+                done
+
+                if [[ "$VERBOSE" -eq 1 ]]; then
+                    echo Found the youngest file in batch: $YOUNGEST_FILE...
+                fi
+
+                if [[ "$FASTFORWARD" -eq 1 ]]; then
+                    for F in "${NAMESAKE_FILE_BATCH[@]}"; do
+                        if [[ "$F" != "$YOUNGEST_FILE" ]]; then
+                            if [[ "$VERBOSE" -eq 1 ]]; then
+                                echo "Removing older version: $F..."
+                            fi
+                            rm -f "$F"
+                        fi
+                    done
+                else
+                    for F in "${NAMESAKE_FILE_BATCH[@]}"; do
+                        if [[ "$F" != "$YOUNGEST_FILE" ]]; then
+                            read -p "Do you want to remove older version: $FILE? (y/n) " ANSWER </dev/tty
+                            if [[ "$ANSWER" == 'y' ]]; then
+                                rm -f "$F"
+                            fi
+                        fi
+                    done
+                fi
+            }
+        done
+    }
+}
+
 if [[ "$VERBOSE" -eq 1 ]]; then
     printstate
 fi
@@ -286,6 +335,9 @@ for TASK in "${TASK_LIST[@]}"; do
             ;;
         TEMPORARY)
             do_temporary
+            ;;
+        NAMESAKE)
+            do_namesake
             ;;
 
     esac
