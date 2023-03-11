@@ -329,6 +329,24 @@ do_permissions () {
     }
 }
 
+do_symbols () {
+    find "${SOURCE[@]}" -type f -print0 | grep -e "[${UNWANTED_SYMBOLS}]" -z | {
+        while IFS= read -r -d $'\0' FILE; do
+            NEW_FILENAME=$(echo "$FILE" | sed "s/[${UNWANTED_SYMBOLS}]/${UNWANTED_SYMBOLS_SUBSTITUTE}/g")
+            if [[ "$FASTFORWARD" -eq 1 ]]; then
+                if [[ "$VERBOSE" -eq 1 ]]; then
+                    echo Changing undesirable file name: $FILE into $NEW_FILENAME...
+                fi
+                mv -f -- $FILE $NEW_FILENAME
+            else
+                read -p "Do you want to change $FILE name to more conveniant ($NEW_FILENAME)? (y/n) " ANSWER </dev/tty
+                if [[ "$ANSWER" == 'y' ]]; then
+                    mv -f -- $FILE $NEW_FILENAME
+                fi
+            fi
+    }
+}
+
 if [[ "$VERBOSE" -eq 1 ]]; then
     printstate
 fi
@@ -362,6 +380,9 @@ for TASK in "${TASK_LIST[@]}"; do
             ;;
         PERMISSIONS)
             do_permissions
+            ;;
+        SYMBOLS)
+            do_symbols
             ;;
 
     esac
