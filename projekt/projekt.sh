@@ -314,7 +314,7 @@ do_permissions () {
 
             if [[ "$FASTFORWARD" -eq 1 ]]; then
                 if [[ "$VERBOSE" -eq 1 ]]; then
-                    echo "Altering permissions of $FILE to rw-r-r..."
+                    echo "Altering permissions of $FILE from $(stat -c "%a" $FILE) to $DEFAULT_ACCESS..."
                 fi
                 chmod a-rwx $FILE
                 chmod +$DEFAULT_ACCESS $FILE
